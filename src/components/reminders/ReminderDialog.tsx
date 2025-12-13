@@ -42,48 +42,88 @@ export function ReminderDialog() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-2">Set Reminder</h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4 truncate">
-          {article.title}
-        </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-[hsl(var(--ink)_/_0.4)] backdrop-blur-sm animate-fade-in"
+        onClick={closeReminderDialog}
+      />
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Quick options</label>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleQuickSet(0)}>
-                Today
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleQuickSet(1)}>
-                Tomorrow
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleQuickSet(7)}>
-                1 Week
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleQuickSet(30)}>
-                1 Month
-              </Button>
-            </div>
-          </div>
+      {/* Dialog */}
+      <div className="relative w-full max-w-md paper rounded-md p-6 animate-fade-in">
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-1">Set Reminder</h2>
+          <p className="font-mono text-sm text-[hsl(var(--muted-foreground))] truncate">
+            {article.title}
+          </p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Or pick a date</label>
-            <div className="flex gap-2">
-              <Input
-                type="date"
-                value={customDate}
-                onChange={(e) => setCustomDate(e.target.value)}
-                min={format(new Date(), "yyyy-MM-dd")}
-                className="flex-1"
-              />
-              <Button onClick={handleCustomSet}>Set</Button>
-            </div>
+        {/* Quick options */}
+        <div className="mb-6">
+          <label className="block font-mono text-xs text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-3">
+            Quick Options
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: "Today", days: 0 },
+              { label: "Tomorrow", days: 1 },
+              { label: "1 Week", days: 7 },
+              { label: "1 Month", days: 30 },
+            ].map(({ label, days }) => (
+              <button
+                key={days}
+                onClick={() => handleQuickSet(days)}
+                className="
+                  py-3 px-2
+                  border border-[hsl(var(--border))] rounded-sm
+                  font-mono text-xs uppercase tracking-wider
+                  text-[hsl(var(--foreground))]
+                  transition-all duration-200
+                  hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))]
+                  hover:bg-[hsl(var(--accent)_/_0.05)]
+                  active:bg-[hsl(var(--accent)_/_0.1)]
+                "
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end">
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[hsl(var(--border))]" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-[hsl(var(--background))] px-3 font-mono text-xs text-[hsl(var(--ink-faint))] uppercase">
+              or
+            </span>
+          </div>
+        </div>
+
+        {/* Custom date */}
+        <div className="mb-6">
+          <label className="block font-mono text-xs text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-3">
+            Pick a Date
+          </label>
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={customDate}
+              onChange={(e) => setCustomDate(e.target.value)}
+              min={format(new Date(), "yyyy-MM-dd")}
+              className="flex-1"
+            />
+            <Button variant="primary" onClick={handleCustomSet}>
+              Set
+            </Button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end pt-2">
           <Button variant="ghost" onClick={closeReminderDialog}>
             Cancel
           </Button>

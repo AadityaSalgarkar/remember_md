@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { format, isToday, isTomorrow, isPast } from "date-fns";
+import { format, isToday, isTomorrow, isPast, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/stores/uiStore";
@@ -9,9 +9,10 @@ import type { ArticleWithReminder } from "@/domain/articles/types";
 
 interface ArticleCardProps {
   article: ArticleWithReminder;
+  index?: number;
 }
 
-export function ArticleCard({ article }: ArticleCardProps) {
+export function ArticleCard({ article, index = 0 }: ArticleCardProps) {
   const { openReminderDialog, viewMode } = useUIStore();
   const { markDone, snooze, cancelReminder, loadDueCount } = useReminderStore();
   const { archiveArticle, restoreArticle, loadArticles } = useArticleStore();
@@ -20,6 +21,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
   const remindDate = reminder ? new Date(reminder.remind_at) : null;
   const isDue = remindDate && (isToday(remindDate) || isPast(remindDate));
   const isTomorrowDue = remindDate && isTomorrow(remindDate);
+  const daysUntil = remindDate ? differenceInDays(remindDate, new Date()) : null;
 
   const handleOpen = async () => {
     try {
@@ -68,41 +70,66 @@ export function ArticleCard({ article }: ArticleCardProps) {
   const formatRemindDate = (date: Date) => {
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
+    if (isPast(date)) {
+      const daysAgo = Math.abs(differenceInDays(date, new Date()));
+      return `${daysAgo}d overdue`;
+    }
+    if (daysUntil && daysUntil <= 7) return `In ${daysUntil}d`;
     return format(date, "MMM d");
   };
 
+  const getBadgeVariant = () => {
+    if (isDue) return "due";
+    if (isTomorrowDue || (daysUntil && daysUntil <= 3)) return "upcoming";
+    return "muted";
+  };
+
   return (
-    <div className="rounded-lg border border-[hsl(var(--border))] p-4 hover:bg-[hsl(var(--accent))]/50 transition-colors">
-      {/* Title and path */}
-      <div className="flex items-start justify-between gap-4">
+    <article
+      className="paper rounded-md p-5 animate-fade-in"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      {/* Header: Title + Open button */}
+      <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium truncate">{article.title}</h3>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] truncate">
+          <h2
+            className="text-lg font-medium leading-snug cursor-pointer hover:text-[hsl(var(--accent))] transition-colors"
+            onClick={handleOpen}
+            title="Open in MD_RENDER"
+          >
+            {article.title}
+          </h2>
+          <p className="font-mono text-xs text-[hsl(var(--ink-faint))] mt-1 truncate">
             {article.relative_path}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleOpen}>
+        <Button variant="ghost" size="sm" onClick={handleOpen} className="shrink-0">
           Open
         </Button>
       </div>
 
-      {/* Reminder status and actions */}
-      <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
+      {/* Divider */}
+      <div className="h-px bg-[hsl(var(--border))] my-4" />
+
+      {/* Footer: Status + Actions */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {/* Status */}
+        <div className="flex items-center gap-3">
           {reminder ? (
-            <>
-              <Badge variant={isDue ? "destructive" : isTomorrowDue ? "secondary" : "outline"}>
-                {isDue ? "Due" : `Remind: ${formatRemindDate(remindDate!)}`}
-              </Badge>
-            </>
+            <Badge variant={getBadgeVariant()}>
+              {formatRemindDate(remindDate!)}
+            </Badge>
           ) : (
-            <span className="text-sm text-[hsl(var(--muted-foreground))]">No reminder</span>
+            <span className="font-mono text-xs text-[hsl(var(--ink-faint))] italic">
+              No reminder set
+            </span>
           )}
         </div>
 
+        {/* Actions */}
         <div className="flex items-center gap-2">
           {viewMode === "archived" ? (
-            <Button variant="outline" size="sm" onClick={handleRestore}>
+            <Button variant="secondary" size="sm" onClick={handleRestore}>
               Restore
             </Button>
           ) : (
@@ -110,7 +137,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
               {reminder ? (
                 <>
                   {isDue && (
-                    <Button variant="default" size="sm" onClick={handleMarkDone}>
+                    <Button variant="primary" size="sm" onClick={handleMarkDone}>
                       Done
                     </Button>
                   )}
@@ -119,7 +146,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                     size="sm"
                     onClick={() => handleSnooze(isDue ? 1 : 7)}
                   >
-                    {isDue ? "Tomorrow" : "Snooze"}
+                    {isDue ? "+1d" : "Snooze"}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleCancelReminder}>
                     Cancel
@@ -127,7 +154,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                 </>
               ) : (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => openReminderDialog(article.id)}
                 >
@@ -141,6 +168,6 @@ export function ArticleCard({ article }: ArticleCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

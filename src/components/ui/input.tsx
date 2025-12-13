@@ -7,7 +7,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         ref={ref}
-        className={`flex h-10 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm ring-offset-[hsl(var(--background))] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={`
+          w-full h-10 px-3 py-2
+          bg-[hsl(var(--background))]
+          border border-[hsl(var(--border))]
+          rounded-sm
+          font-mono text-sm
+          text-[hsl(var(--foreground))]
+          placeholder:text-[hsl(var(--ink-faint))]
+          transition-all duration-200
+          hover:border-[hsl(var(--ink-faint))]
+          focus:outline-none focus:border-[hsl(var(--accent))]
+          focus:ring-2 focus:ring-[hsl(var(--accent)_/_0.15)]
+          disabled:opacity-50 disabled:cursor-not-allowed
+          ${className}
+        `}
         {...props}
       />
     );
