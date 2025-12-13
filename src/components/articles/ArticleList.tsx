@@ -8,11 +8,21 @@ export function ArticleList() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-        <div className="w-8 h-8 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] rounded-full animate-spin mb-4" />
-        <span className="font-mono text-sm text-[hsl(var(--muted-foreground))]">
-          Loading articles...
-        </span>
+      <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="card p-4 animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex-1">
+                <div className="skeleton h-5 w-3/4 mb-2" />
+                <div className="skeleton h-3 w-1/2" />
+              </div>
+              <div className="skeleton h-8 w-14" />
+            </div>
+            <div className="pt-3 border-t border-[hsl(var(--border))]">
+              <div className="skeleton h-6 w-20" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -29,39 +39,37 @@ export function ArticleList() {
 
   if (filteredArticles.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-        <div className="w-16 h-16 mb-6 text-[hsl(var(--ink-faint))]">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+      <div className="empty-state animate-fade-in">
+        <div className="empty-state-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium mb-2">
+        <p className="empty-state-title">
           {searchQuery
             ? "No matches found"
             : viewMode === "archived"
               ? "No archived articles"
               : "No articles yet"}
-        </h3>
-        <p className="font-mono text-sm text-[hsl(var(--muted-foreground))] text-center max-w-sm">
+        </p>
+        <p className="empty-state-text">
           {searchQuery
             ? "Try a different search term"
             : viewMode === "archived"
               ? "Archived articles will appear here"
-              : "Configure your vault path in settings to import articles from your Obsidian vault"}
+              : "Configure your vault in settings to get started"}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* Results count */}
-      <div className="flex items-center justify-between mb-6">
-        <p className="font-mono text-xs text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-          {filteredArticles.length} article{filteredArticles.length !== 1 ? "s" : ""}
-          {searchQuery && ` matching "${searchQuery}"`}
-        </p>
-      </div>
+      <p className="article-count">
+        <strong>{filteredArticles.length}</strong> article{filteredArticles.length !== 1 ? "s" : ""}
+        {searchQuery && ` matching "${searchQuery}"`}
+      </p>
 
       {/* Article list */}
       <div className="space-y-3">

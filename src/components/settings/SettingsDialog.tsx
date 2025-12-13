@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useArticleStore } from "@/stores/articleStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -72,79 +70,74 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
       {/* Backdrop */}
       {!defaultOpen && (
         <div
-          className="absolute inset-0 bg-[hsl(var(--ink)_/_0.4)] backdrop-blur-sm animate-fade-in"
+          className="dialog-overlay animate-fade-in"
           onClick={handleClose}
         />
       )}
 
       {/* Dialog */}
-      <div className="relative w-full max-w-lg paper rounded-md p-6 animate-fade-in">
-        {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-1">Settings</h2>
-          <p className="font-mono text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="dialog-content animate-fade-in-scale">
+        <div className="dialog-header">
+          <h2 className="dialog-title">Settings</h2>
+          <p className="dialog-subtitle">
             Configure your Obsidian vault location
           </p>
         </div>
 
-        {/* Vault Path */}
-        <div className="mb-6">
-          <label className="block font-mono text-xs text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-3">
-            Obsidian Vault Path
-          </label>
-          <div className="flex gap-2">
-            <Input
+        <div className="dialog-body">
+          {/* Vault Path */}
+          <label className="label">Obsidian Vault Path</label>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
               value={vaultPath}
               onChange={(e) => setVaultPath(e.target.value)}
               placeholder="/path/to/your/vault"
-              className="flex-1"
+              className="input flex-1"
             />
-            <Button variant="secondary" onClick={handleBrowse}>
+            <button className="btn btn-secondary" onClick={handleBrowse}>
               Browse
-            </Button>
+            </button>
           </div>
+
+          {/* Sync info */}
+          {settings.lastSyncAt && (
+            <div className="p-3 rounded-lg bg-[hsl(var(--stone-100))] mb-4">
+              <p className="text-xs text-[hsl(var(--text-secondary))]">
+                Last synced: {new Date(settings.lastSyncAt).toLocaleString()}
+              </p>
+            </div>
+          )}
+
+          {/* Sync result */}
+          {syncResult && (
+            <div className={`p-3 rounded-lg mb-4 text-sm ${
+              syncResult.startsWith("Error")
+                ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
+                : "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
+            }`}>
+              {syncResult}
+            </div>
+          )}
         </div>
 
-        {/* Sync info */}
-        {settings.lastSyncAt && (
-          <div className="mb-4 p-3 rounded-sm bg-[hsl(var(--muted))] border border-[hsl(var(--border))]">
-            <p className="font-mono text-xs text-[hsl(var(--muted-foreground))]">
-              Last synced: {new Date(settings.lastSyncAt).toLocaleString()}
-            </p>
-          </div>
-        )}
-
-        {/* Sync result */}
-        {syncResult && (
-          <div className={`
-            mb-4 p-3 rounded-sm border font-mono text-xs
-            ${syncResult.startsWith("Error")
-              ? "bg-[hsl(var(--accent)_/_0.1)] border-[hsl(var(--accent)_/_0.3)] text-[hsl(var(--accent))]"
-              : "bg-[hsl(var(--success-light))] border-[hsl(var(--success)_/_0.3)] text-[hsl(var(--success))]"
-            }
-          `}>
-            {syncResult}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+        <div className="dialog-footer justify-between">
           <div>
             {settings.vaultPath && (
-              <Button variant="ghost" onClick={handleSync} disabled={isSyncing}>
+              <button className="btn btn-ghost" onClick={handleSync} disabled={isSyncing}>
                 {isSyncing ? "Syncing..." : "Sync Now"}
-              </Button>
+              </button>
             )}
           </div>
           <div className="flex gap-2">
             {!defaultOpen && (
-              <Button variant="ghost" onClick={handleClose}>
+              <button className="btn btn-ghost" onClick={handleClose}>
                 Cancel
-              </Button>
+              </button>
             )}
-            <Button variant="primary" onClick={handleSave} disabled={!vaultPath || isSyncing}>
+            <button className="btn btn-primary" onClick={handleSave} disabled={!vaultPath || isSyncing}>
               {isSyncing ? "Saving..." : "Save"}
-            </Button>
+            </button>
           </div>
         </div>
       </div>

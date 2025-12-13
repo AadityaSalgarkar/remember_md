@@ -32,7 +32,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <div className="w-8 h-8 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-mono text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm text-[hsl(var(--text-secondary))]">
             Loading...
           </p>
         </div>
@@ -45,30 +45,20 @@ function App() {
       <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center max-w-md animate-fade-in">
           {/* Icon */}
-          <div className="w-20 h-20 mx-auto mb-8 text-[hsl(var(--ink-faint))]">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={0.75}>
+          <div className="w-16 h-16 mx-auto mb-6 text-[hsl(var(--accent))]">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
             </svg>
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-semibold mb-3">
+          <h1 className="text-2xl font-bold mb-2">
             Remember
           </h1>
-          <p className="text-[hsl(var(--muted-foreground))] mb-8 leading-relaxed">
+          <p className="text-[hsl(var(--text-secondary))] mb-8">
             A reading companion for your Obsidian vault.
-            <br />
             Set reminders for articles you want to revisit.
           </p>
-
-          {/* Decorative line */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex-1 h-px bg-[hsl(var(--border))]" />
-            <span className="font-mono text-xs text-[hsl(var(--ink-faint))] uppercase tracking-widest">
-              Get Started
-            </span>
-            <div className="flex-1 h-px bg-[hsl(var(--border))]" />
-          </div>
 
           <SettingsDialog defaultOpen />
         </div>

@@ -1,7 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { format, isToday, isTomorrow, isPast, differenceInDays } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/stores/uiStore";
 import { useReminderStore } from "@/stores/reminderStore";
 import { useArticleStore } from "@/stores/articleStore";
@@ -78,92 +76,94 @@ export function ArticleCard({ article, index = 0 }: ArticleCardProps) {
     return format(date, "MMM d");
   };
 
-  const getBadgeVariant = () => {
-    if (isDue) return "due";
-    if (isTomorrowDue || (daysUntil && daysUntil <= 3)) return "upcoming";
-    return "muted";
+  const getCardClass = () => {
+    let base = "card p-4 animate-fade-in";
+    if (isDue) base += " card-due";
+    else if (isTomorrowDue || (daysUntil && daysUntil <= 3)) base += " card-upcoming";
+    return base;
+  };
+
+  const getBadgeClass = () => {
+    if (isDue) return "badge badge-due";
+    if (isTomorrowDue || (daysUntil && daysUntil <= 3)) return "badge badge-upcoming";
+    return "badge badge-muted";
   };
 
   return (
     <article
-      className="paper rounded-md p-5 animate-fade-in"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className={getCardClass()}
+      style={{ animationDelay: `${index * 40}ms` }}
     >
-      {/* Header: Title + Open button */}
-      <div className="flex items-start justify-between gap-4 mb-3">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
-          <h2
-            className="text-lg font-medium leading-snug cursor-pointer hover:text-[hsl(var(--accent))] transition-colors"
+          <h3
+            className="text-[15px] font-semibold leading-snug cursor-pointer hover:text-[hsl(var(--accent))] transition-colors truncate"
             onClick={handleOpen}
-            title="Open in MD_RENDER"
+            title={article.title}
           >
             {article.title}
-          </h2>
-          <p className="font-mono text-xs text-[hsl(var(--ink-faint))] mt-1 truncate">
+          </h3>
+          <p className="text-xs text-[hsl(var(--text-tertiary))] mt-0.5 truncate">
             {article.relative_path}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleOpen} className="shrink-0">
+        <button className="btn btn-ghost btn-sm shrink-0" onClick={handleOpen}>
           Open
-        </Button>
+        </button>
       </div>
 
-      {/* Divider */}
-      <div className="h-px bg-[hsl(var(--border))] my-4" />
-
-      {/* Footer: Status + Actions */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-2 pt-3 border-t border-[hsl(var(--border))]">
         {/* Status */}
-        <div className="flex items-center gap-3">
+        <div>
           {reminder ? (
-            <Badge variant={getBadgeVariant()}>
+            <span className={getBadgeClass()}>
               {formatRemindDate(remindDate!)}
-            </Badge>
+            </span>
           ) : (
-            <span className="font-mono text-xs text-[hsl(var(--ink-faint))] italic">
-              No reminder set
+            <span className="text-xs text-[hsl(var(--text-tertiary))]">
+              No reminder
             </span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {viewMode === "archived" ? (
-            <Button variant="secondary" size="sm" onClick={handleRestore}>
+            <button className="btn btn-secondary btn-sm" onClick={handleRestore}>
               Restore
-            </Button>
+            </button>
           ) : (
             <>
               {reminder ? (
                 <>
                   {isDue && (
-                    <Button variant="primary" size="sm" onClick={handleMarkDone}>
+                    <button className="btn btn-primary btn-sm" onClick={handleMarkDone}>
                       Done
-                    </Button>
+                    </button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    className="btn btn-ghost btn-sm"
                     onClick={() => handleSnooze(isDue ? 1 : 7)}
                   >
                     {isDue ? "+1d" : "Snooze"}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleCancelReminder}>
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={handleCancelReminder}>
                     Cancel
-                  </Button>
+                  </button>
                 </>
               ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
+                  className="btn btn-secondary btn-sm"
                   onClick={() => openReminderDialog(article.id)}
                 >
                   Set Reminder
-                </Button>
+                </button>
               )}
-              <Button variant="ghost" size="sm" onClick={handleArchive}>
+              <button className="btn btn-ghost btn-sm" onClick={handleArchive}>
                 Archive
-              </Button>
+              </button>
             </>
           )}
         </div>
