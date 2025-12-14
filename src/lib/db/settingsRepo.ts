@@ -6,7 +6,7 @@ export interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  vaultPath: "/Users/aaditya/Documents/obs/aaditya",
+  vaultPath: "/Users/aaditya/Documents/obs/aaditya/Clippings",
   lastSyncAt: null,
 };
 
