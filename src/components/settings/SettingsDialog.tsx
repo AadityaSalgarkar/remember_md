@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useArticleStore } from "@/stores/articleStore";
 import { useUIStore } from "@/stores/uiStore";
+import { cn } from "@/lib/utils";
 
 interface SettingsDialogProps {
   defaultOpen?: boolean;
@@ -11,10 +22,15 @@ interface SettingsDialogProps {
 export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
   const { settings, updateVaultPath } = useSettingsStore();
   const { syncFromVault, loadArticles } = useArticleStore();
-  const { closeSettings } = useUIStore();
+  const { isSettingsOpen, closeSettings } = useUIStore();
   const [vaultPath, setVaultPath] = useState(settings.vaultPath || "");
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
+
+  // Sync vaultPath state when settings change
+  useEffect(() => {
+    setVaultPath(settings.vaultPath || "");
+  }, [settings.vaultPath]);
 
   const handleBrowse = async () => {
     const selected = await open({
@@ -65,45 +81,42 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
     }
   };
 
+  const isOpen = defaultOpen || isSettingsOpen;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      {!defaultOpen && (
-        <div
-          className="dialog-overlay animate-fade-in"
-          onClick={handleClose}
-        />
-      )}
-
-      {/* Dialog */}
-      <div className="dialog-content animate-fade-in-scale">
-        <div className="dialog-header">
-          <h2 className="dialog-title">Settings</h2>
-          <p className="dialog-subtitle">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Settings</DialogTitle>
+          <DialogDescription>
             Configure your Obsidian vault location
-          </p>
-        </div>
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="dialog-body">
+        <div className="py-4 space-y-4">
           {/* Vault Path */}
-          <label className="label">Obsidian Vault Path</label>
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={vaultPath}
-              onChange={(e) => setVaultPath(e.target.value)}
-              placeholder="/path/to/your/vault"
-              className="input flex-1"
-            />
-            <button className="btn btn-secondary" onClick={handleBrowse}>
-              Browse
-            </button>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+              Obsidian Vault Path
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={vaultPath}
+                onChange={(e) => setVaultPath(e.target.value)}
+                placeholder="/path/to/your/vault"
+                className="flex-1"
+              />
+              <Button variant="secondary" onClick={handleBrowse}>
+                Browse
+              </Button>
+            </div>
           </div>
 
           {/* Sync info */}
           {settings.lastSyncAt && (
-            <div className="p-3 rounded-lg bg-[hsl(var(--stone-100))] mb-4">
-              <p className="text-xs text-[hsl(var(--text-secondary))]">
+            <div className="p-3 rounded-lg bg-muted">
+              <p className="text-xs text-muted-foreground">
                 Last synced: {new Date(settings.lastSyncAt).toLocaleString()}
               </p>
             </div>
@@ -111,36 +124,39 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
 
           {/* Sync result */}
           {syncResult && (
-            <div className={`p-3 rounded-lg mb-4 text-sm ${
-              syncResult.startsWith("Error")
-                ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                : "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
-            }`}>
+            <div
+              className={cn(
+                "p-3 rounded-lg text-sm",
+                syncResult.startsWith("Error")
+                  ? "bg-coral-light text-primary"
+                  : "bg-teal-light text-teal"
+              )}
+            >
               {syncResult}
             </div>
           )}
         </div>
 
-        <div className="dialog-footer justify-between">
+        <DialogFooter className="flex-row justify-between sm:justify-between">
           <div>
             {settings.vaultPath && (
-              <button className="btn btn-ghost" onClick={handleSync} disabled={isSyncing}>
+              <Button variant="ghost" onClick={handleSync} disabled={isSyncing}>
                 {isSyncing ? "Syncing..." : "Sync Now"}
-              </button>
+              </Button>
             )}
           </div>
           <div className="flex gap-2">
             {!defaultOpen && (
-              <button className="btn btn-ghost" onClick={handleClose}>
+              <Button variant="ghost" onClick={handleClose}>
                 Cancel
-              </button>
+              </Button>
             )}
-            <button className="btn btn-primary" onClick={handleSave} disabled={!vaultPath || isSyncing}>
+            <Button onClick={handleSave} disabled={!vaultPath || isSyncing}>
               {isSyncing ? "Saving..." : "Save"}
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
