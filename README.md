@@ -120,15 +120,7 @@ Tauri capabilities are defined in `src-tauri/capabilities/default.json`.
 - `src/lib/db/` — SQLite schema + small repo modules (`articlesRepo`, `remindersRepo`, `settingsRepo`)
 - `src-tauri/` — Tauri backend (Rust commands: vault scan, opener)
 
-## Roadmap
-
-Work-in-progress refactor plan lives in `AGENTS.md` (Tufte-inspired UI + more modular domain/DB layers). Primary branch for that work: `refactor/tufte-modular`.
-
-## Notes before publishing
-
-- `src/lib/db/settingsRepo.ts` currently contains a developer-specific default vault path. Consider setting the default to `null` (or a generic example) before pushing publicly.
-
 ## License
 
-Add a license file if you plan to distribute this publicly.
+MIT
 
