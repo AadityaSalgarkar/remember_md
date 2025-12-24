@@ -1,6 +1,12 @@
 # Remember
 
-Remember is a small Tauri desktop app that helps you keep a lightweight “reading inbox” for your Obsidian vault: it scans a folder of Markdown files, lists them as articles, and lets you set simple revisit reminders.
+Remember is a small Tauri desktop app that helps you keep a lightweight "reading inbox" for your Obsidian vault: it scans a folder of Markdown files, lists them as articles, and lets you set simple revisit reminders.
+
+## Screenshots
+
+| Main View | Set Reminder |
+|-----------|--------------|
+| ![Main list view](assets/screenshot-list.png) | ![Reminder dialog](assets/screenshot-dialog.png) |
 
 ## What it does
 
@@ -59,6 +65,14 @@ npm run build
 
 ```bash
 npm run tauri build
+```
+
+### Install to /Applications (macOS)
+
+After building, copy the app bundle:
+
+```bash
+cp -r src-tauri/target/release/bundle/macos/Remember.app /Applications/
 ```
 
 ## Using the app
