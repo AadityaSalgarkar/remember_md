@@ -1,4 +1,4 @@
-import { BookOpen, RefreshCw, Settings } from "lucide-react";
+import { BookOpen, RefreshCw, Settings, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -15,8 +15,9 @@ export function Sidebar() {
   const { openSettings, viewMode } = useUIStore();
   const { dueCount } = useReminderStore();
   const { syncFromVault, loadArticles } = useArticleStore();
-  const { settings } = useSettingsStore();
+  const { settings, toggleTheme } = useSettingsStore();
   const { loadDueCount } = useReminderStore();
+  const isDark = settings.theme === "dark";
 
   const handleRefresh = async () => {
     if (settings.vaultPath) {
@@ -54,6 +55,22 @@ export function Sidebar() {
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">Sync vault</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {isDark ? "Light mode" : "Dark mode"}
+          </TooltipContent>
         </Tooltip>
 
         <Tooltip>

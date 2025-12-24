@@ -1,13 +1,17 @@
 import { getDb } from "./client";
 
+export type Theme = "light" | "dark";
+
 export interface Settings {
   vaultPath: string | null;
   lastSyncAt: string | null;
+  theme: Theme;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   vaultPath: "/Users/aaditya/Documents/obs/aaditya/Clippings",
   lastSyncAt: null,
+  theme: "light",
 };
 
 export const settingsRepo = {
@@ -23,6 +27,8 @@ export const settingsRepo = {
         settings.vaultPath = row.value;
       } else if (row.key === "lastSyncAt") {
         settings.lastSyncAt = row.value;
+      } else if (row.key === "theme") {
+        settings.theme = row.value as Theme;
       }
     }
     return settings;
