@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useArticleStore } from "@/stores/articleStore";
+import { useIdeaStore } from "@/stores/ideaStore";
+import { useReminderStore } from "@/stores/reminderStore";
 import { useUIStore } from "@/stores/uiStore";
+import { getIdeasPath } from "@/domain/ideas/paths";
 import { cn } from "@/lib/utils";
 
 interface SettingsDialogProps {
@@ -22,10 +25,13 @@ interface SettingsDialogProps {
 export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
   const { settings, updateVaultPath } = useSettingsStore();
   const { syncFromVault, loadArticles } = useArticleStore();
+  const { syncIdeas, loadIdeas } = useIdeaStore();
+  const { loadDueCount } = useReminderStore();
   const { isSettingsOpen, closeSettings } = useUIStore();
   const [vaultPath, setVaultPath] = useState(settings.vaultPath || "");
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
+  const derivedIdeasPath = vaultPath ? getIdeasPath(vaultPath) : null;
 
   // Sync vaultPath state when settings change
   useEffect(() => {
@@ -35,7 +41,7 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
   const handleBrowse = async () => {
     const selected = await open({
       directory: true,
-      title: "Select Obsidian Vault",
+      title: "Select Clippings Folder",
     });
     if (selected) {
       setVaultPath(selected);
@@ -48,9 +54,16 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
       setIsSyncing(true);
       setSyncResult(null);
       try {
-        const result = await syncFromVault(vaultPath);
-        setSyncResult(`Synced: +${result.added} added, -${result.removed} removed`);
+        const [articleResult, ideaResult] = await Promise.all([
+          syncFromVault(vaultPath),
+          syncIdeas(vaultPath),
+        ]);
+        setSyncResult(
+          `Synced: +${articleResult.added} articles, +${ideaResult.added} ideas`
+        );
         await loadArticles();
+        await loadIdeas();
+        await loadDueCount();
       } catch (error) {
         setSyncResult(`Error: ${error}`);
       } finally {
@@ -70,9 +83,16 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
       setIsSyncing(true);
       setSyncResult(null);
       try {
-        const result = await syncFromVault(settings.vaultPath);
-        setSyncResult(`Synced: +${result.added} added, -${result.removed} removed`);
+        const [articleResult, ideaResult] = await Promise.all([
+          syncFromVault(settings.vaultPath),
+          syncIdeas(settings.vaultPath),
+        ]);
+        setSyncResult(
+          `Synced: +${articleResult.added} articles, +${ideaResult.added} ideas`
+        );
         await loadArticles();
+        await loadIdeas();
+        await loadDueCount();
       } catch (error) {
         setSyncResult(`Error: ${error}`);
       } finally {
@@ -89,22 +109,22 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
-            Configure your Obsidian vault location
+            Configure the clippings folder. Ideas are stored beside it.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {/* Vault Path */}
+          {/* Clippings path */}
           <div>
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
-              Obsidian Vault Path
+              Clippings Folder
             </label>
             <div className="flex gap-2">
               <Input
                 type="text"
                 value={vaultPath}
                 onChange={(e) => setVaultPath(e.target.value)}
-                placeholder="/path/to/your/vault"
+                placeholder="/path/to/your/vault/Clippings"
                 className="flex-1"
               />
               <Button variant="secondary" onClick={handleBrowse}>
@@ -112,6 +132,15 @@ export function SettingsDialog({ defaultOpen }: SettingsDialogProps) {
               </Button>
             </div>
           </div>
+
+          {derivedIdeasPath && (
+            <div className="p-3 rounded-lg bg-muted">
+              <p className="text-xs text-muted-foreground">Ideas folder</p>
+              <p className="text-sm text-foreground truncate" title={derivedIdeasPath}>
+                {derivedIdeasPath}
+              </p>
+            </div>
+          )}
 
           {/* Sync info */}
           {settings.lastSyncAt && (

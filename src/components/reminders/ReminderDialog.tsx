@@ -14,38 +14,66 @@ import { Separator } from "@/components/ui/separator";
 import { useUIStore } from "@/stores/uiStore";
 import { useReminderStore } from "@/stores/reminderStore";
 import { useArticleStore } from "@/stores/articleStore";
+import { useIdeaStore } from "@/stores/ideaStore";
 
 export function ReminderDialog() {
-  const { selectedArticleId, closeReminderDialog } = useUIStore();
-  const { createReminder, loadDueCount } = useReminderStore();
+  const { selectedReminderTarget, closeReminderDialog } = useUIStore();
+  const { createReminder, createIdeaReminder, loadDueCount } = useReminderStore();
   const { articles, loadArticles } = useArticleStore();
+  const { ideas, loadIdeas } = useIdeaStore();
   const [customDate, setCustomDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const article = articles.find((a) => a.id === selectedArticleId);
-  const isOpen = !!selectedArticleId;
+  const article =
+    selectedReminderTarget?.type === "article"
+      ? articles.find((a) => a.id === selectedReminderTarget.id)
+      : undefined;
+  const idea =
+    selectedReminderTarget?.type === "idea"
+      ? ideas.find((item) => item.id === selectedReminderTarget.id)
+      : undefined;
+  const targetTitle = article?.title ?? idea?.title;
+  const isOpen = !!selectedReminderTarget;
 
   const handleQuickSet = async (days: number) => {
-    if (!article) return;
+    if (!selectedReminderTarget) return;
     const remindAt = format(addDays(new Date(), days), "yyyy-MM-dd");
-    await createReminder({
-      article_id: article.id,
-      remind_at: remindAt,
-      is_first: true,
-    });
+    if (selectedReminderTarget.type === "article") {
+      await createReminder({
+        article_id: selectedReminderTarget.id,
+        remind_at: remindAt,
+        is_first: true,
+      });
+      await loadArticles();
+    } else {
+      await createIdeaReminder({
+        idea_id: selectedReminderTarget.id,
+        remind_at: remindAt,
+        is_first: true,
+      });
+      await loadIdeas();
+    }
     await loadDueCount();
-    await loadArticles();
     closeReminderDialog();
   };
 
   const handleCustomSet = async () => {
-    if (!article) return;
-    await createReminder({
-      article_id: article.id,
-      remind_at: customDate,
-      is_first: true,
-    });
+    if (!selectedReminderTarget) return;
+    if (selectedReminderTarget.type === "article") {
+      await createReminder({
+        article_id: selectedReminderTarget.id,
+        remind_at: customDate,
+        is_first: true,
+      });
+      await loadArticles();
+    } else {
+      await createIdeaReminder({
+        idea_id: selectedReminderTarget.id,
+        remind_at: customDate,
+        is_first: true,
+      });
+      await loadIdeas();
+    }
     await loadDueCount();
-    await loadArticles();
     closeReminderDialog();
   };
 
@@ -61,9 +89,9 @@ export function ReminderDialog() {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Set Reminder</DialogTitle>
-          {article && (
-            <DialogDescription className="truncate" title={article.title}>
-              {article.title}
+          {targetTitle && (
+            <DialogDescription className="truncate" title={targetTitle}>
+              {targetTitle}
             </DialogDescription>
           )}
         </DialogHeader>

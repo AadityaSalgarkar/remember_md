@@ -24,7 +24,30 @@ CREATE TABLE IF NOT EXISTS reminders (
     FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS ideas (
+    id TEXT PRIMARY KEY,
+    file_path TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    relative_path TEXT NOT NULL,
+    is_archived INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS idea_reminders (
+    id TEXT PRIMARY KEY,
+    idea_id TEXT NOT NULL,
+    remind_at TEXT NOT NULL,
+    is_first INTEGER DEFAULT 1,
+    completed_at TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_reminders_remind_at ON reminders(remind_at);
 CREATE INDEX IF NOT EXISTS idx_reminders_completed ON reminders(completed_at);
 CREATE INDEX IF NOT EXISTS idx_articles_archived ON articles(is_archived);
+CREATE INDEX IF NOT EXISTS idx_idea_reminders_remind_at ON idea_reminders(remind_at);
+CREATE INDEX IF NOT EXISTS idx_idea_reminders_completed ON idea_reminders(completed_at);
+CREATE INDEX IF NOT EXISTS idx_ideas_archived ON ideas(is_archived);
 `;

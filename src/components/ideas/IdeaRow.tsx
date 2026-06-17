@@ -19,20 +19,20 @@ import {
 } from "@/components/ui/tooltip";
 import { useUIStore } from "@/stores/uiStore";
 import { useReminderStore } from "@/stores/reminderStore";
-import { useArticleStore } from "@/stores/articleStore";
-import type { ArticleWithReminder } from "@/domain/articles/types";
+import { useIdeaStore } from "@/stores/ideaStore";
+import type { IdeaWithReminder } from "@/domain/ideas/types";
 import { cn } from "@/lib/utils";
 
-interface ArticleRowProps {
-  article: ArticleWithReminder;
+interface IdeaRowProps {
+  idea: IdeaWithReminder;
 }
 
-export function ArticleRow({ article }: ArticleRowProps) {
+export function IdeaRow({ idea }: IdeaRowProps) {
   const { openReminderDialog, viewMode } = useUIStore();
-  const { markDone, snooze, cancelReminder, loadDueCount } = useReminderStore();
-  const { archiveArticle, restoreArticle, loadArticles } = useArticleStore();
+  const { markIdeaDone, snoozeIdea, cancelIdeaReminder, loadDueCount } = useReminderStore();
+  const { archiveIdea, restoreIdea, loadIdeas } = useIdeaStore();
 
-  const reminder = article.reminder;
+  const reminder = idea.reminder;
   const remindDate = reminder ? new Date(reminder.remind_at) : null;
   const isDue = remindDate && (isToday(remindDate) || isPast(remindDate));
   const isTomorrowDue = remindDate && isTomorrow(remindDate);
@@ -41,46 +41,46 @@ export function ArticleRow({ article }: ArticleRowProps) {
 
   const handleOpen = async () => {
     try {
-      await invoke("open_in_md_render", { filePath: article.file_path });
+      await invoke("open_in_md_render", { filePath: idea.file_path });
     } catch (error) {
-      console.error("Failed to open file:", error);
+      console.error("Failed to open idea:", error);
     }
   };
 
   const handleMarkDone = async () => {
     if (reminder) {
-      await markDone(reminder.id, article.id);
+      await markIdeaDone(reminder.id, idea.id);
       await loadDueCount();
-      await loadArticles();
+      await loadIdeas();
     }
   };
 
   const handleSnooze = async (days: number) => {
     if (reminder) {
-      await snooze(reminder.id, days);
+      await snoozeIdea(reminder.id, days);
       await loadDueCount();
-      await loadArticles();
+      await loadIdeas();
     }
   };
 
   const handleCancelReminder = async () => {
     if (reminder) {
-      await cancelReminder(reminder.id);
+      await cancelIdeaReminder(reminder.id);
       await loadDueCount();
-      await loadArticles();
+      await loadIdeas();
     }
   };
 
   const handleArchive = async () => {
     if (reminder) {
-      await cancelReminder(reminder.id);
+      await cancelIdeaReminder(reminder.id);
     }
-    await archiveArticle(article.id);
+    await archiveIdea(idea.id);
     await loadDueCount();
   };
 
   const handleRestore = async () => {
-    await restoreArticle(article.id);
+    await restoreIdea(idea.id);
   };
 
   const formatRemindDate = (date: Date) => {
@@ -115,7 +115,6 @@ export function ArticleRow({ article }: ArticleRowProps) {
         )}
         onClick={handleOpen}
       >
-        {/* Status indicator */}
         <div
           className={cn(
             "w-1 h-10 rounded-full shrink-0 transition-colors",
@@ -123,17 +122,11 @@ export function ArticleRow({ article }: ArticleRowProps) {
           )}
         />
 
-        {/* Title & path */}
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate text-foreground">
-            {article.title}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">
-            {article.relative_path}
-          </p>
+          <p className="font-medium text-sm truncate text-foreground">{idea.title}</p>
+          <p className="text-xs text-muted-foreground truncate">{idea.relative_path}</p>
         </div>
 
-        {/* Reminder badge - always visible */}
         <div className="shrink-0">
           {reminder ? (
             <Badge
@@ -151,10 +144,9 @@ export function ArticleRow({ article }: ArticleRowProps) {
           )}
         </div>
 
-        {/* Actions - visible on hover */}
         <div
           className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
         >
           <TooltipProvider delayDuration={0}>
             {viewMode === "archived" ? (
@@ -229,7 +221,7 @@ export function ArticleRow({ article }: ArticleRowProps) {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => openReminderDialog({ type: "article", id: article.id })}
+                        onClick={() => openReminderDialog({ type: "idea", id: idea.id })}
                       >
                         <Bell className="w-4 h-4" />
                       </Button>

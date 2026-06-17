@@ -1,17 +1,31 @@
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUIStore } from "@/stores/uiStore";
 import { useArticleStore } from "@/stores/articleStore";
+import { useIdeaStore } from "@/stores/ideaStore";
 
 export function MainHeader() {
-  const { viewMode, setViewMode, searchQuery, setSearchQuery } = useUIStore();
+  const {
+    appMode,
+    viewMode,
+    setViewMode,
+    searchQuery,
+    setSearchQuery,
+    openNewIdeaDialog,
+  } = useUIStore();
   const { loadArticles } = useArticleStore();
+  const { loadIdeas } = useIdeaStore();
 
   const handleViewChange = (mode: string) => {
     const viewModeTyped = mode as "active" | "archived";
     setViewMode(viewModeTyped);
-    loadArticles(viewModeTyped === "archived");
+    if (appMode === "articles") {
+      loadArticles(viewModeTyped === "archived");
+    } else {
+      loadIdeas(viewModeTyped === "archived");
+    }
   };
 
   return (
@@ -22,20 +36,28 @@ export function MainHeader() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
-            placeholder="Search articles..."
+            placeholder={appMode === "articles" ? "Search articles..." : "Search ideas..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9"
           />
         </div>
 
-        {/* View toggle */}
-        <Tabs value={viewMode} onValueChange={handleViewChange}>
-          <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="archived">Archived</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2">
+          {appMode === "ideas" && (
+            <Button size="sm" onClick={openNewIdeaDialog}>
+              <Plus className="w-4 h-4" />
+              New Idea
+            </Button>
+          )}
+
+          <Tabs value={viewMode} onValueChange={handleViewChange}>
+            <TabsList>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="archived">Archived</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
     </header>
   );
