@@ -70,10 +70,16 @@ npm run tauri build
 
 ### Install to /Applications (macOS)
 
-After building, copy the app bundle:
+Use the Makefile target to build and install the app bundle:
 
 ```bash
-cp -r src-tauri/target/release/bundle/macos/Remember.app /Applications/
+make macos-install
+```
+
+To build, install, and remove generated build artifacts afterward:
+
+```bash
+make macos-install-clean
 ```
 
 ## Using the app
