@@ -2,14 +2,20 @@ import { useEffect, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useArticleStore } from "./stores/articleStore";
+import { useIdeaStore } from "./stores/ideaStore";
+import { useUIStore } from "./stores/uiStore";
 import { AppShell } from "./components/layout/AppShell";
 import { ArticleList } from "./components/articles/ArticleList";
+import { IdeaList } from "./components/ideas/IdeaList";
+import { NewIdeaDialog } from "./components/ideas/NewIdeaDialog";
 import { SettingsDialog } from "./components/settings/SettingsDialog";
 import { ReminderDialog } from "./components/reminders/ReminderDialog";
 
 function App() {
   const { settings, loadSettings, isLoading: settingsLoading } = useSettingsStore();
   const { loadArticles, syncFromVault } = useArticleStore();
+  const { loadIdeas, syncIdeas } = useIdeaStore();
+  const { appMode } = useUIStore();
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -22,9 +28,19 @@ function App() {
 
   useEffect(() => {
     if (initialized && settings.vaultPath) {
-      syncFromVault(settings.vaultPath).then(() => loadArticles());
+      Promise.all([
+        syncFromVault(settings.vaultPath).then(() => loadArticles()),
+        syncIdeas(settings.vaultPath).then(() => loadIdeas()),
+      ]);
     }
-  }, [initialized, settings.vaultPath, syncFromVault, loadArticles]);
+  }, [
+    initialized,
+    settings.vaultPath,
+    syncFromVault,
+    loadArticles,
+    syncIdeas,
+    loadIdeas,
+  ]);
 
   if (settingsLoading || !initialized) {
     return (
@@ -49,8 +65,8 @@ function App() {
           {/* Title */}
           <h1 className="text-2xl font-bold mb-2 text-foreground">Remember</h1>
           <p className="text-muted-foreground mb-8">
-            A reading companion for your Obsidian vault. Set reminders for
-            articles you want to revisit.
+            A companion for clippings and ideas. Set reminders for what you
+            want to revisit.
           </p>
 
           <SettingsDialog defaultOpen />
@@ -61,9 +77,10 @@ function App() {
 
   return (
     <AppShell>
-      <ArticleList />
+      {appMode === "articles" ? <ArticleList /> : <IdeaList />}
       <SettingsDialog />
       <ReminderDialog />
+      <NewIdeaDialog />
     </AppShell>
   );
 }

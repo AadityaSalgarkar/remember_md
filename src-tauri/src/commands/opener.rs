@@ -1,20 +1,20 @@
 use std::process::Command;
 
-/// Open a markdown file in MD_RENDER application
+/// Open a markdown file using mdrender.
 #[tauri::command]
 pub async fn open_in_md_render(file_path: String) -> Result<(), String> {
-    // Use macOS 'open' command with -a flag to specify the application
-    let status = Command::new("open")
-        .arg("-a")
-        .arg("MD_RENDER")
+    let home = std::env::var("HOME").map_err(|_| "Could not get HOME directory".to_string())?;
+    let mdrender_path = format!("{}/bin/mdrender", home);
+
+    let status = Command::new(&mdrender_path)
         .arg(&file_path)
         .status()
-        .map_err(|e| format!("Failed to execute open command: {}", e))?;
+        .map_err(|e| format!("Failed to execute mdrender: {}", e))?;
 
     if status.success() {
         Ok(())
     } else {
-        Err(format!("Failed to open file in MD_RENDER: {}", file_path))
+        Err(format!("Failed to open file with mdrender: {}", file_path))
     }
 }
 

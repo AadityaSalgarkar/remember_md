@@ -9,6 +9,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             commands::vault::scan_vault,
+            commands::ideas::scan_ideas,
+            commands::ideas::create_idea_file,
             commands::opener::open_in_md_render,
             commands::opener::reveal_in_finder,
         ])
